@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4a5568">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Multiplication">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Multiplication Board">
+    <meta name="description" content="Learn multiplication visually with colorful interactive board - works offline!">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+    <title>Multiplication Board - Learn Visually</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fafafa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #4a5568;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        /* Mode Selection */
+        .mode-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            background-color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mode-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .mode-btn.multiply {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .mode-btn.multiply.active {
+            background-color: #4ECDC4;
+            color: white;
+        }
+
+        .mode-btn.practice {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .mode-btn.practice.active {
+            background-color: #96CEB4;
+            color: white;
+        }
+
+        .mode-btn.table {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .mode-btn.table.active {
+            background-color: #DDA0DD;
+            color: white;
+        }
+
+        /* Input Section */
+        .input-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-field label {
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .input-field input {
+            width: 100px;
+            padding: 0.75rem;
+            font-size: 1.2rem;
+            text-align: center;
+            border: 2px solid #4ECDC4;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .multiply-symbol {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .show-btn {
+            background-color: #4ECDC4;
+            color: white;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+        }
+
+        .reset-btn {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .sound-toggle {
+            background-color: #FFD700;
+            color: #4a5568;
+        }
+
+        .sound-toggle.off {
+            background-color: #e2e8f0;
+        }
+
+        /* Result Display */
+        #result-text {
+            margin-top: 1rem;
+            padding: 1rem 2rem;
+            background-color: #f0fdf4;
+            border: 2px solid #4ade80;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #166534;
+            text-align: center;
+            display: none;
+        }
+
+        /* Practice Section */
+        .practice-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .practice-question {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a5568;
+            text-align: center;
+        }
+
+        .practice-question .big-number {
+            font-size: 2.5rem;
+            color: #96CEB4;
+            margin: 0.5rem 0;
+        }
+
+        .practice-result {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+
+        .practice-result.correct {
+            background-color: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            display: block;
+        }
+
+        .practice-result.wrong {
+            background-color: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            display: block;
+        }
+
+        /* Table Section */
+        .table-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .table-section h3 {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        .table-input {
+            width: 150px;
+            padding: 0.75rem;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 2px solid #DDA0DD;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        /* Multiplication Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(13, auto);
+            gap: 2px;
+            padding: 1rem;
+            background-color: #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .grid-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: all 0.5s ease;
+        }
+
+        /* Header cells */
+        .header-cell {
+            width: 50px;
+            height: 50px;
+            background-color: #4a5568;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 1.2rem;
+        }
+
+        /* Cell backgrounds with row colors */
+        .data-cell {
+            background-color: white;
+            font-size: 1rem;
+            cursor: default;
+            border: 3px solid;
+        }
+
+        .data-cell.practice-mode {
+            cursor: pointer;
+        }
+
+        /* Row colors - border colors */
+        .row-1 { border-color: #FF6B6B; }
+        .row-2 { border-color: #4ECDC4; }
+        .row-3 { border-color: #45B7D1; }
+        .row-4 { border-color: #96CEB4; }
+        .row-5 { border-color: #FFEAA7; }
+        .row-6 { border-color: #DDA0DD; }
+        .row-7 { border-color: #FF8C00; }
+        .row-8 { border-color: #20B2AA; }
+        .row-9 { border-color: #FF69B4; }
+        .row-10 { border-color: #9370DB; }
+        .row-11 { border-color: #3CB371; }
+        .row-12 { border-color: #FFD700; }
+
+        /* Highlight styles */
+        .row-highlighted {
+            background-color: rgba(78, 205, 196, 0.4) !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
+        }
+
+        .column-highlighted {
+            background-color: rgba(221, 160, 221, 0.4) !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(221, 160, 221, 0.6);
+        }
+
+        .intersection-highlighted {
+            background-color: #FFD700 !important;
+            transform: scale(1.2);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 215, 0, 0.4);
+            z-index: 10;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .correct {
+            background-color: #4ade80 !important;
+            transform: scale(1.2);
+            box-shadow: 0 0 25px rgba(74, 222, 128, 0.8);
+            animation: celebrate 0.5s ease-in-out;
+        }
+
+        .wrong {
+            background-color: #f87171 !important;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 215, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(255, 215, 0, 1), 0 0 70px rgba(255, 215, 0, 0.6);
+            }
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1.2); }
+            50% { transform: scale(1.3); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Section visibility */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: flex;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #4a5568;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
+        footer p:last-child {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(13, 35px);
+                overflow-x: auto;
+            }
+
+            .grid-cell {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-container {
+                grid-template-columns: repeat(13, 30px);
+            }
+
+            .grid-cell {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🧮 Multiplication Board</h1>
+        <p>Learn Multiplication Visually! (Works Offline)</p>
+    </header>
+
+    <main>
+        <!-- Mode Selection -->
+        <div class="mode-buttons">
+            <button class="mode-btn multiply active" onclick="setMode('multiply')">➕ Multiply</button>
+            <button class="mode-btn practice" onclick="setMode('practice')">🎯 Practice Mode</button>
+            <button class="mode-btn table" onclick="setMode('table')">📊 Table Focus</button>
+            <button class="mode-btn sound-toggle" id="sound-btn" onclick="toggleSound()">🔊 Sound On</button>
+        </div>
+
+        <!-- Multiply Section -->
+        <div class="section input-section active" id="multiply-section">
+            <div class="input-group">
+                <div class="input-field">
+                    <label>First Number (Row)</label>
+                    <input type="number" id="num1" min="1" max="12" value="1">
+                </div>
+                <span class="multiply-symbol">×</span>
+                <div class="input-field">
+                    <label>Second Number (Column)</label>
+                    <input type="number" id="num2" min="1" max="12" value="1">
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn show-btn" onclick="showMultiplication()">✨ Show Multiplication</button>
+                <button class="action-btn reset-btn" onclick="resetBoard()">🔄 Reset</button>
+            </div>
+            <div id="result-text"></div>
+        </div>
+
+        <!-- Practice Section -->
+        <div class="section practice-section" id="practice-section">
+            <div class="practice-question">
+                <div>What is</div>
+                <div class="big-number" id="practice-question"></div>
+                <div>Click the correct answer on the board!</div>
+            </div>
+            <div class="practice-result" id="practice-result"></div>
+            <button class="action-btn show-btn" onclick="generatePracticeQuestion()">🎲 New Question</button>
+        </div>
+
+        <!-- Table Section -->
+        <div class="section table-section" id="table-section">
+            <h3>Show Table of:</h3>
+            <input type="number" class="table-input" id="table-num" min="1" max="12" value="1">
+            <div class="action-buttons">
+                <button class="action-btn show-btn" onclick="showTable()">📊 Show Table</button>
+                <button class="action-btn reset-btn" onclick="resetBoard()">🔄 Reset</button>
+            </div>
+        </div>
+
+        <!-- Multiplication Grid -->
+        <div class="grid-container" id="grid"></div>
+    </main>
+
+    <footer>
+        <p>🎓 Educational Multiplication Board • Works Completely Offline</p>
+        <p>Perfect for Classroom Use and Projector Presentations</p>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentMode = 'multiply';
+        let soundEnabled = true;
+        let practiceQuestion = null;
+
+        // Store cells: cells[row-1][col-1] for 0-indexed array
+        let cells = [];
+
+        // Row colors
+        const rowColors = [
+            '#FF6B6B', // Red
+            '#4ECDC4', // Teal
+            '#45B7D1', // Blue
+            '#96CEB4', // Light Green
+            '#FFEAA7', // Yellow
+            '#DDA0DD', // Plum
+            '#FF8C00', // Dark Orange
+            '#20B2AA', // Light Sea Green
+            '#FF69B4', // Hot Pink
+            '#9370DB', // Medium Purple
+            '#3CB371', // Medium Sea Green
+            '#FFD700'  // Gold
+        ];
+
+        // Convert number to words
+        function numberToWords(num) {
+            const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+
+            if (num <= 12) return ones[num];
+
+            if (num < 20) {
+                const teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+                return teens[num - 10];
+            }
+
+            if (num < 100) {
+                const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+                const remainder = num % 10;
+                if (remainder === 0) return tens[Math.floor(num / 10)];
+                return tens[Math.floor(num / 10)] + ' ' + ones[remainder];
+            }
+
+            if (num < 1000) {
+                const hundreds = Math.floor(num / 100);
+                const remainder = num % 100;
+                if (remainder === 0) return ones[hundreds] + ' hundred';
+                return ones[hundreds] + ' hundred and ' + numberToWords(remainder);
+            }
+
+            return num.toString();
+        }
+
+        // Speech synthesis
+        function speak(text) {
+            if (!soundEnabled) return;
+
+            try {
+                window.speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.log('Speech error:', e);
+            }
+        }
+
+        // Speak multiplication result
+        function speakMultiplication(n1, n2, result) {
+            const text = `${numberToWords(n1)} multiplied by ${numberToWords(n2)} equals ${numberToWords(result)}`;
+            speak(text);
+        }
+
+        // Initialize grid
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            cells = [];
+
+            // Empty top-left cell
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'header-cell';
+            emptyCell.textContent = '×';
+            grid.appendChild(emptyCell);
+
+            // Column headers (1-12)
+            for (let i = 1; i <= 12; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'header-cell';
+                cell.textContent = i;
+                grid.appendChild(cell);
+            }
+
+            // Create 12 rows of data cells
+            for (let row = 1; row <= 12; row++) {
+                // Initialize this row in our cells array (0-indexed: row-1)
+                cells[row - 1] = [];
+
+                // Row header
+                const rowHeader = document.createElement('div');
+                rowHeader.className = 'header-cell';
+                rowHeader.style.backgroundColor = rowColors[row - 1];
+                rowHeader.textContent = row;
+                grid.appendChild(rowHeader);
+
+                // Create 12 columns for this row
+                for (let col = 1; col <= 12; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = `grid-cell data-cell row-${row}`;
+                    cell.textContent = row * col;
+
+                    // Store in 0-indexed array: cells[row-1][col-1]
+                    cells[row - 1][col - 1] = cell;
+
+                    // Add click handler - use closure to capture row and col
+                    (function(r, c) {
+                        cell.addEventListener('click', function() {
+                            handleCellClick(r, c);
+                        });
+                    })(row, col);
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Set mode
+        function setMode(mode) {
+            currentMode = mode;
+
+            // Update buttons
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.mode-btn.${mode}`).classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${mode}-section`).classList.add('active');
+
+            // Update grid cursor for practice mode
+            const dataCells = document.querySelectorAll('.data-cell');
+            dataCells.forEach(cell => {
+                if (mode === 'practice') {
+                    cell.classList.add('practice-mode');
+                } else {
+                    cell.classList.remove('practice-mode');
+                }
+            });
+
+            // Clear highlights
+            clearHighlights();
+
+            // Generate practice question if in practice mode
+            if (mode === 'practice') {
+                generatePracticeQuestion();
+            }
+        }
+
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const soundBtn = document.getElementById('sound-btn');
+            if (soundEnabled) {
+                soundBtn.textContent = '🔊 Sound On';
+                soundBtn.classList.remove('off');
+            } else {
+                soundBtn.textContent = '🔇 Sound Off';
+                soundBtn.classList.add('off');
+            }
+        }
+
+        // Clear all highlights
+        function clearHighlights() {
+            // Iterate through all cells using 0-indexed array
+            for (let rowIdx = 0; rowIdx < 12; rowIdx++) {
+                for (let colIdx = 0; colIdx < 12; colIdx++) {
+                    if (cells[rowIdx] && cells[rowIdx][colIdx]) {
+                        cells[rowIdx][colIdx].classList.remove('row-highlighted', 'column-highlighted', 'intersection-highlighted', 'correct', 'wrong');
+                    }
+                }
+            }
+
+            document.getElementById('result-text').style.display = 'none';
+            document.getElementById('practice-result').style.display = 'none';
+            document.getElementById('practice-result').classList.remove('correct', 'wrong');
+        }
+
+        // Show multiplication
+        function showMultiplication() {
+            if (currentMode !== 'multiply') return;
+
+            clearHighlights();
+
+            const num1 = parseInt(document.getElementById('num1').value);
+            const num2 = parseInt(document.getElementById('num2').value);
+
+            // Validate inputs
+            if (num1 < 1 || num1 > 12 || num2 < 1 || num2 > 12) {
+                alert('Please enter numbers between 1 and 12');
+                return;
+            }
+
+            // Convert to 0-indexed
+            const rowIdx = num1 - 1;
+            const colIdx = num2 - 1;
+
+            // Animation step 1: Highlight row (num1)
+            setTimeout(() => {
+                for (let c = 0; c < 12; c++) {
+                    if (cells[rowIdx] && cells[rowIdx][c]) {
+                        cells[rowIdx][c].classList.add('row-highlighted');
+                    }
+                }
+            }, 100);
+
+            // Animation step 2: Highlight column (num2)
+            setTimeout(() => {
+                for (let r = 0; r < 12; r++) {
+                    if (cells[r] && cells[r][colIdx]) {
+                        cells[r][colIdx].classList.add('column-highlighted');
+                    }
+                }
+            }, 600);
+
+            // Animation step 3: Highlight intersection and speak
+            setTimeout(() => {
+                if (cells[rowIdx] && cells[rowIdx][colIdx]) {
+                    cells[rowIdx][colIdx].classList.add('intersection-highlighted');
+                }
+
+                const result = num1 * num2;
+                const resultText = document.getElementById('result-text');
+                resultText.innerHTML = `<strong>${num1} × ${num2} = ${result}</strong>`;
+                resultText.style.display = 'block';
+
+                speakMultiplication(num1, num2, result);
+            }, 1100);
+        }
+
+        // Handle cell click in practice mode
+        function handleCellClick(row, col) {
+            if (currentMode !== 'practice' || !practiceQuestion) return;
+
+            const correctAnswer = practiceQuestion.num1 * practiceQuestion.num2;
+            const clickedValue = row * col;
+
+            if (clickedValue === correctAnswer) {
+                // Correct answer
+                clearHighlights();
+
+                const resultDiv = document.getElementById('practice-result');
+                resultDiv.textContent = '✓ Well done!';
+                resultDiv.className = 'practice-result correct';
+
+                // Highlight the CORRECT answer cell (practiceQuestion.num1, practiceQuestion.num2)
+                const correctRowIdx = practiceQuestion.num1 - 1;
+                const correctColIdx = practiceQuestion.num2 - 1;
+
+                if (cells[correctRowIdx] && cells[correctRowIdx][correctColIdx]) {
+                    cells[correctRowIdx][correctColIdx].classList.add('correct');
+                }
+
+                // Speak success message with a slight delay
+                setTimeout(() => {
+                    speak(`Correct! ${numberToWords(practiceQuestion.num1)} times ${numberToWords(practiceQuestion.num2)} equals ${numberToWords(correctAnswer)}`);
+                }, 200);
+
+                // Generate new question after delay
+                setTimeout(() => {
+                    generatePracticeQuestion();
+                }, 2500);
+            } else {
+                // Wrong answer
+                clearHighlights();
+
+                const resultDiv = document.getElementById('practice-result');
+                resultDiv.textContent = '✗ Try again!';
+                resultDiv.className = 'practice-result wrong';
+
+                // Highlight the clicked cell
+                const clickedRowIdx = row - 1;
+                const clickedColIdx = col - 1;
+
+                if (cells[clickedRowIdx] && cells[clickedRowIdx][clickedColIdx]) {
+                    cells[clickedRowIdx][clickedColIdx].classList.add('wrong');
+                }
+
+                // Speak with delay to ensure it works
+                setTimeout(() => {
+                    speak('Try again!');
+                }, 100);
+
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 1500);
+            }
+        }
+
+        // Generate practice question
+        function generatePracticeQuestion() {
+            clearHighlights();
+            const num1 = Math.floor(Math.random() * 12) + 1;
+            const num2 = Math.floor(Math.random() * 12) + 1;
+            practiceQuestion = { num1, num2 };
+
+            document.getElementById('practice-question').textContent = `${num1} × ${num2} = ?`;
+
+            // Speak the question
+            if (soundEnabled) {
+                const text = `What is ${numberToWords(num1)} times ${numberToWords(num2)}?`;
+                speak(text);
+            }
+        }
+
+        // Show table
+        function showTable() {
+            if (currentMode !== 'table') return;
+
+            clearHighlights();
+
+            const tableNum = parseInt(document.getElementById('table-num').value);
+
+            if (tableNum < 1 || tableNum > 12) {
+                alert('Please enter a number between 1 and 12');
+                return;
+            }
+
+            // Convert to 0-indexed
+            const tableIdx = tableNum - 1;
+
+            // Highlight the entire row (table of tableNum)
+            for (let c = 0; c < 12; c++) {
+                if (cells[tableIdx] && cells[tableIdx][c]) {
+                    cells[tableIdx][c].classList.add('row-highlighted');
+                }
+            }
+
+            // Highlight all cells in the column
+            for (let r = 0; r < 12; r++) {
+                if (cells[r] && cells[r][tableIdx]) {
+                    cells[r][tableIdx].classList.add('column-highlighted');
+                }
+            }
+
+            // Special highlight for the intersection
+            if (cells[tableIdx] && cells[tableIdx][tableIdx]) {
+                cells[tableIdx][tableIdx].classList.add('intersection-highlighted');
+            }
+
+            // Speak table announcement
+            speak(`Showing the ${numberToWords(tableNum)} times table`);
+        }
+
+        // Reset board
+        function resetBoard() {
+            clearHighlights();
+            document.getElementById('num1').value = 1;
+            document.getElementById('num2').value = 1;
+            document.getElementById('table-num').value = 1;
+
+            if (currentMode === 'practice') {
+                generatePracticeQuestion();
+            }
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initGrid();
+        };
+    </script>
+</body>
+</html>
